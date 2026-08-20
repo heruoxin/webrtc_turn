@@ -17,8 +17,8 @@
 import { spawnSync } from "node:child_process";
 import { createInterface } from "node:readline/promises";
 
-const wrangler = (args, input) =>
-  spawnSync("npx", ["wrangler", ...args], { input, stdio: ["pipe", "inherit", "inherit"] });
+const wrangler = (args, options) =>
+  spawnSync("npx", ["wrangler", ...args], { stdio: "inherit", ...options });
 
 console.log("Create a TURN key at https://dash.cloudflare.com/?to=/:account/realtime/turn");
 console.log("Cloudflare shows the API token once, so copy both values before closing that page.\n");
@@ -28,9 +28,13 @@ const TURN_KEY_ID = (await ask.question("TURN key id: ")).trim();
 const TURN_KEY_API_TOKEN = (await ask.question("TURN key API token: ")).trim();
 ask.close();
 
-// The worker has to exist before it can hold secrets. Uploading them afterwards
-// publishes a second version, which reopens the setup page for 30 minutes.
+// Deploy keeps the terminal because it may have to walk you through a browser
+// login first. The worker also has to exist before it can hold secrets, and
+// uploading them publishes a second version, which reopens the setup page.
 wrangler(["deploy"]);
-wrangler(["secret", "bulk"], JSON.stringify({ TURN_KEY_ID, TURN_KEY_API_TOKEN }));
+wrangler(["secret", "bulk"], {
+  input: JSON.stringify({ TURN_KEY_ID, TURN_KEY_API_TOKEN }),
+  stdio: ["pipe", "inherit", "inherit"],
+});
 
 console.log("\nOpen the workers.dev address printed above to get your relay URL.");
