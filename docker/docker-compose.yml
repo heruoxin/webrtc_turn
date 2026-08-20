@@ -1,0 +1,46 @@
+services:
+  coturn:
+    image: coturn/coturn:4.7
+    restart: unless-stopped
+    # The relay hands out ports from its own range, which port mapping cannot
+    # follow. Host networking is the only workable mode, so this needs Linux.
+    network_mode: host
+    command:
+      - -n
+      - --no-cli
+      - --fingerprint
+      - --no-tls
+      - --no-dtls
+      - --realm=${PUBLIC_HOST}
+      - --use-auth-secret
+      - --static-auth-secret=${TURN_STATIC_SECRET}
+      - --listening-port=3478
+      - --min-port=49160
+      - --max-port=49200
+      - --external-ip=$$(detect-external-ip)
+
+  credentials:
+    image: python:3.13-alpine
+    restart: unless-stopped
+    environment:
+      ACCESS_TOKEN: ${ACCESS_TOKEN}
+      TURN_STATIC_SECRET: ${TURN_STATIC_SECRET}
+      TURN_URLS: ${TURN_URLS}
+    volumes:
+      - ./credentials.py:/srv/credentials.py:ro
+    command: ["python3", "/srv/credentials.py"]
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+
+volumes:
+  caddy-data:

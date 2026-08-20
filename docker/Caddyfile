@@ -1,0 +1,3 @@
+{$PUBLIC_HOST} {
+	reverse_proxy credentials:8080
+}
