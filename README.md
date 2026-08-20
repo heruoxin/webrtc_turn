@@ -3,7 +3,7 @@
 [中文](README.zh-CN.md)
 
 A relay server for AndroMeld, so your devices can still reach each other when
-your network blocks a direct connection.
+the network blocks a direct connection.
 
 AndroMeld connects your phone, Mac, and browser directly whenever it can. Some
 networks, such as mobile carriers and office Wi-Fi, refuse to let two devices
@@ -11,77 +11,73 @@ find each other. A relay server sits in the middle and passes the traffic
 through. This project gives you two ways to run one, and both end with a single
 URL that you paste into the app.
 
-Your traffic is encrypted end to end. The relay forwards packets it cannot read.
+Your traffic stays encrypted end to end. The relay forwards packets it cannot
+read.
 
 ## Pick one
 
 | | Cloudflare | Docker |
 |---|---|---|
-| You need | A Cloudflare account | A Linux server and a domain name |
-| Setup time | About 5 minutes | About 10 minutes |
-| Cost | Free up to 1,000 GB per month, then $0.05 per GB | Whatever your server costs |
+| You need | A Cloudflare account, and most likely a payment method | A Linux server with a public IP address, and a domain name |
 | Runs on | Cloudflare's global network | Your machine |
+| Cost | Nothing for the first 1,000 GB each month, then $0.05 per GB | Whatever your server costs |
+| Setup | Browser only, about 5 minutes | One command, about 10 minutes |
 
-Cloudflare is the shorter path. Pick Docker if you already run a server, or if
-you want the traffic to stay on hardware you control.
+### About the payment method
+
+Cloudflare Realtime, the service behind the Cloudflare option, is a paid
+product with a free allowance. Several people have reported that the dashboard
+asks for a credit card before it will hand out TURN credentials, and a
+Cloudflare community moderator confirmed it in the same thread. Cloudflare's own
+documentation does not say either way, so treat this as likely rather than
+certain.
+
+What is documented: the first 1,000 GB of relayed traffic each month is free,
+and traffic beyond that costs $0.05 per GB. Only data that actually goes through
+the relay counts, so a month where every connection succeeds directly costs
+nothing. You do not need the paid Workers plan.
+
+If you would rather not hand over a card, use the Docker option. It needs a
+Linux server with a public IP address instead.
 
 ## Deploy on Cloudflare
 
 ### 1. Create a TURN key
 
 Open [Realtime > TURN Keys](https://dash.cloudflare.com/?to=/:account/realtime/turn)
-in your Cloudflare dashboard and select **Create**. Give it any name.
+and select **Create**. Any name works.
 
-Cloudflare then shows a **key id** and an **API token**. Copy both now. The API
-token is shown once and cannot be read again.
+Cloudflare then shows a **key id** and an **API token**. Copy both into a note
+before you close that page. The API token is shown once and cannot be read
+again.
 
-### 2. Invent an access token
-
-This is the password that keeps strangers from using your relay. Any random
-string works:
-
-```
-openssl rand -hex 16
-```
-
-### 3. Deploy
+### 2. Deploy
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/heruoxin/webrtc_turn/tree/main/cloudflare)
 
-Cloudflare copies this repository into your own GitHub account, then asks for
-three values:
+Cloudflare copies this repository into your GitHub account and builds it from
+there. That is how its deploy button works, and it is why the button asks for
+GitHub access. The code it copies is the code in this repository.
 
-- `ACCESS_TOKEN`: the string from step 2
-- `TURN_KEY_ID`: the key id from step 1
-- `TURN_KEY_API_TOKEN`: the API token from step 1
+The setup page asks for the two values from step 1, then deploys. Accept the
+repository and worker names it suggests.
 
-Select **Deploy**. When it finishes, the dashboard shows the address of your
-worker, something like `https://webrtc-turn.your-name.workers.dev`.
+### 3. Get your URL
 
-### 4. Build the URL
+Open the `workers.dev` address the dashboard shows. The worker greets you with
+your finished relay URL, a copy button, and a QR code you can scan with your
+phone.
 
-Add your access token to the address as a query parameter:
+That page stays open for 30 minutes after each deployment, then returns 404. To
+open it again, redeploy from **Workers & Pages > your worker > Deployments**.
 
-```
-https://webrtc-turn.your-name.workers.dev/?token=YOUR_ACCESS_TOKEN
-```
-
-Skip to [paste it into the app](#paste-it-into-the-app).
-
-### Deploying from a terminal instead
-
-```
-cd cloudflare
-npx wrangler secret put ACCESS_TOKEN
-npx wrangler secret put TURN_KEY_ID
-npx wrangler secret put TURN_KEY_API_TOKEN
-npx wrangler deploy
-```
+The URL contains a token derived from your API token. It stays the same across
+redeployments, so a URL you already saved keeps working.
 
 ## Deploy with Docker
 
-You need a Linux server with a public IP address. Host networking is required
-for the relay, so Docker Desktop on macOS and Windows will not work.
+You need a Linux server with a public IP address. The relay needs host
+networking, so Docker Desktop on macOS and Windows will not work.
 
 ### 1. Point a domain at the server
 
@@ -120,7 +116,7 @@ https://turn.example.com/?token=YOUR_ACCESS_TOKEN
 
 ### Turning on TURN over TLS
 
-Relay traffic on port 3478 is visible as relay traffic, and a few strict
+Relay traffic on port 3478 is recognizable as relay traffic, and a few strict
 networks block it. Port 5349 wraps the same traffic in TLS, which usually gets
 through.
 
@@ -143,6 +139,29 @@ wrong. Your Mac and browser pick up the setting on their own.
 
 Nothing changes for connections that already work. The relay is used only when
 a direct connection fails.
+
+The URL contains your private token. Anyone who has it can send traffic through
+your relay, so keep it to yourself.
+
+## Deploying from a terminal
+
+If you already have Node and a terminal, this skips the GitHub copy entirely:
+
+```
+git clone https://github.com/heruoxin/webrtc_turn
+cd webrtc_turn/cloudflare
+npm install
+npm run setup
+```
+
+The script asks for the TURN key id and API token, deploys, and prints the
+worker address. Open it to get your relay URL.
+
+To choose your own token instead of the derived one, set it and redeploy:
+
+```
+npx wrangler secret put ACCESS_TOKEN
+```
 
 ## What the endpoint returns
 

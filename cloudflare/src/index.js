@@ -13,8 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import { qrSvg } from "./qr.js";
+
 // Cloudflare Realtime caps credential lifetime at 48 hours.
 const TTL_SECONDS = 86400;
+
+// The setup page is reachable only for this long after a deployment, so an
+// abandoned worker does not keep handing its URL to whoever finds it.
+const SETUP_WINDOW_MS = 30 * 60 * 1000;
+
+const encode = (value) => new TextEncoder().encode(value);
 
 const json = (body, status) =>
   new Response(JSON.stringify(body), {
@@ -25,11 +33,64 @@ const json = (body, status) =>
 const text = (body, status) =>
   new Response(body, { status, headers: { "content-type": "text/plain; charset=utf-8" } });
 
+const html = (body, status) =>
+  new Response(body, { status, headers: { "content-type": "text/html; charset=utf-8" } });
+
+// Deriving the access token from the API token keeps it stable across
+// redeployments, so a URL already saved in the app never stops working.
+async function accessToken(env) {
+  if (env.ACCESS_TOKEN) return env.ACCESS_TOKEN;
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encode(env.TURN_KEY_API_TOKEN),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encode("webrtc_turn/access/v1"));
+  return [...new Uint8Array(signature).slice(0, 16)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 // Digesting first makes the comparison independent of the length of the
 // supplied token, which timingSafeEqual would otherwise leak.
 async function tokenMatches(supplied, expected) {
-  const digest = (value) => crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  const digest = (value) => crypto.subtle.digest("SHA-256", encode(value));
   return crypto.subtle.timingSafeEqual(await digest(supplied), await digest(expected));
+}
+
+function setupPage(relayUrl) {
+  const qr = qrSvg(relayUrl);
+  return `<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Your relay URL</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.6 system-ui, sans-serif; margin: 0 auto; padding: 2rem 1.25rem; max-width: 34rem; }
+  h1 { font-size: 1.5rem; margin: 0 0 1rem; }
+  p { margin: 0 0 1rem; }
+  code { display: block; word-break: break-all; padding: .75rem; border: 1px solid; border-radius: .5rem; font-size: .9rem; }
+  button { font: inherit; padding: .5rem 1rem; border-radius: .5rem; cursor: pointer; margin: 1rem 0 2rem; }
+  svg { max-width: 100%; height: auto; border-radius: .5rem; }
+</style>
+<h1>Your relay URL</h1>
+<p>Paste this into <b>Remote access &gt; Relay server</b> on your Android device.</p>
+<code id="url">${relayUrl}</code>
+<button id="copy">Copy</button>
+${qr ? `<p>Or scan it with that device:</p>${qr}` : ""}
+<p>This URL contains your private token. Anyone who has it can send traffic through your relay, so keep it to yourself.</p>
+<p>This page closes 30 minutes after each deployment. To open it again, redeploy the worker from <b>Workers &amp; Pages &gt; your worker &gt; Deployments</b>.</p>
+<script>
+  const button = document.getElementById("copy");
+  button.onclick = async () => {
+    await navigator.clipboard.writeText(document.getElementById("url").textContent);
+    button.textContent = "Copied";
+  };
+</script>`;
 }
 
 export default {
@@ -39,7 +100,21 @@ export default {
       return text("Not found", 404);
     }
 
-    if (!(await tokenMatches(url.searchParams.get("token") ?? "", env.ACCESS_TOKEN))) {
+    const expected = await accessToken(env);
+    const supplied = url.searchParams.get("token");
+
+    if (supplied === null) {
+      const age = Date.now() - Date.parse(env.CF_VERSION_METADATA.timestamp);
+      if (age > SETUP_WINDOW_MS) {
+        return text(
+          "This page is closed. Redeploy the worker from Workers & Pages > your worker > Deployments to open it for another 30 minutes.",
+          404,
+        );
+      }
+      return html(setupPage(`${url.origin}/?token=${expected}`), 200);
+    }
+
+    if (!(await tokenMatches(supplied, expected))) {
       return text("Wrong token. Check the relay URL you pasted into the app.", 401);
     }
 

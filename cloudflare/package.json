@@ -1,24 +1,23 @@
 {
   "name": "webrtc-turn-cloudflare",
   "private": true,
+  "type": "module",
   "license": "GPL-3.0-or-later",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "setup": "node bin/setup.mjs"
   },
   "devDependencies": {
     "wrangler": "^4"
   },
   "cloudflare": {
     "bindings": {
-      "ACCESS_TOKEN": {
-        "description": "A password you invent. It goes in the relay URL you paste into the app. Generate one with `openssl rand -hex 16`."
-      },
       "TURN_KEY_ID": {
-        "description": "The TURN key id from [Realtime > TURN Keys](https://dash.cloudflare.com/?to=/:account/realtime/turn) in your dashboard."
+        "description": "The **key id** of the TURN key you created in [Realtime > TURN Keys](https://dash.cloudflare.com/?to=/:account/realtime/turn). It is the shorter of the two values."
       },
       "TURN_KEY_API_TOKEN": {
-        "description": "The API token shown next to that TURN key. Cloudflare shows it once, so copy it when you create the key."
+        "description": "The **API token** of that same TURN key. Cloudflare shows it once, when you create the key."
       }
     }
   }

@@ -1,6 +1,6 @@
 services:
   coturn:
-    image: coturn/coturn:4.7
+    image: coturn/coturn:4.17
     restart: unless-stopped
     # The relay hands out ports from its own range, which port mapping cannot
     # follow. Host networking is the only workable mode, so this needs Linux.
@@ -8,6 +8,7 @@ services:
     command:
       - -n
       - --no-cli
+      - --log-file=stdout
       - --fingerprint
       - --no-tls
       - --no-dtls
