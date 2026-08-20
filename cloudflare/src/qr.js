@@ -222,8 +222,8 @@ function render(bytes, version) {
     at(8, 8, 7);
     at(8, 7, 8);
     for (let i = 9; i < 15; i++) at(8, 14 - i, i);
-    for (let i = 0; i < 8; i++) at(size - 1 - i, 8, i);
-    for (let i = 8; i < 15; i++) at(8, size - 15 + i, i);
+    for (let i = 0; i < 8; i++) at(8, size - 1 - i, i);
+    for (let i = 8; i < 15; i++) at(size - 15 + i, 8, i);
     candidate[size - 8][8] = 1;
 
     const score = penalty(candidate, size);
