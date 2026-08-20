@@ -24,17 +24,19 @@ const SETUP_WINDOW_MS = 30 * 60 * 1000;
 
 const encode = (value) => new TextEncoder().encode(value);
 
-const json = (body, status) =>
-  new Response(JSON.stringify(body), {
+// Every response here carries either the access token or credentials minted
+// from it, so none of them may be stored by a cache along the way.
+const respond = (body, status, type) =>
+  new Response(body, {
     status,
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": type, "cache-control": "no-store" },
   });
 
-const text = (body, status) =>
-  new Response(body, { status, headers: { "content-type": "text/plain; charset=utf-8" } });
+const json = (body, status) => respond(JSON.stringify(body), status, "application/json");
 
-const html = (body, status) =>
-  new Response(body, { status, headers: { "content-type": "text/html; charset=utf-8" } });
+const text = (body, status) => respond(body, status, "text/plain; charset=utf-8");
+
+const html = (body, status) => respond(body, status, "text/html; charset=utf-8");
 
 // Deriving the access token from the API token keeps it stable across
 // redeployments, so a URL already saved in the app never stops working.
@@ -111,7 +113,7 @@ export default {
           404,
         );
       }
-      return html(setupPage(`${url.origin}/?token=${expected}`), 200);
+      return html(setupPage(`${url.origin}/?token=${encodeURIComponent(expected)}`), 200);
     }
 
     if (!(await tokenMatches(supplied, expected))) {
