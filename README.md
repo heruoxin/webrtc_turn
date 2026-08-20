@@ -154,7 +154,7 @@ npm install
 npm run setup
 ```
 
-The script asks for the TURN key id and API token, deploys, and prints the
+The script deploys, then asks for the TURN key id and API token, and prints the
 worker address. Open it to get your relay URL.
 
 To choose your own token instead of the derived one, set it and redeploy:

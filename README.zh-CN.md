@@ -135,7 +135,7 @@ npm install
 npm run setup
 ```
 
-脚本会问 TURN key id 和 API token，然后部署并打印 Worker 地址。打开它就能拿到中转 URL。
+脚本先部署，再问 TURN key id 和 API token，最后打印 Worker 地址。打开它就能拿到中转 URL。
 
 想自己指定 token 而不用派生的那个，设好再重新部署：
 
