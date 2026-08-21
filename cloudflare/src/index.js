@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { qrSvg } from "./qr.js";
-
 // Cloudflare Realtime caps credential lifetime at 48 hours.
 const TTL_SECONDS = 86400;
 
@@ -63,8 +61,11 @@ async function tokenMatches(supplied, expected) {
   return crypto.subtle.timingSafeEqual(await digest(supplied), await digest(expected));
 }
 
+const PLAY_URL =
+  "https://play.google.com/store/apps/details?id=com.catchingnow.andfiles.helper" +
+  "&referrer=utm_source%3Dturn_worker%26utm_medium%3Dreferral%26utm_campaign%3Dsetup_page";
+
 function setupPage(relayUrl) {
-  const qr = qrSvg(relayUrl);
   return `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -76,14 +77,29 @@ function setupPage(relayUrl) {
   h1 { font-size: 1.5rem; margin: 0 0 1rem; }
   p { margin: 0 0 1rem; }
   code { display: block; word-break: break-all; padding: .75rem; border: 1px solid; border-radius: .5rem; font-size: .9rem; }
-  button { font: inherit; padding: .5rem 1rem; border-radius: .5rem; cursor: pointer; margin: 1rem 0 2rem; }
-  svg { max-width: 100%; height: auto; border-radius: .5rem; }
+  button { font: inherit; padding: .5rem 1rem; border-radius: .5rem; cursor: pointer; margin: 1rem 0; }
+  .store-badge { display: inline-flex; align-items: center; gap: 11px; width: 180px; height: 54px; margin: 0 0 2rem; padding: 9px 16px 9px 14px; box-sizing: border-box; text-decoration: none; border-radius: 11px; color: #fff; background: #000; border: 1px solid rgba(255, 255, 255, .18); }
+  .store-badge svg { width: 29px; height: 32px; flex: none; }
+  .store-badge small { display: block; font-size: 10px; font-weight: 520; line-height: 1.1; letter-spacing: .01em; opacity: .72; }
+  .store-badge b { display: block; margin-top: 2px; font-size: 16px; font-weight: 620; line-height: 1.05; }
 </style>
 <h1>Your relay URL</h1>
 <p>Paste this into <b>Remote access &gt; Relay server</b> on your Android device.</p>
 <code id="url">${relayUrl}</code>
 <button id="copy">Copy</button>
-${qr ? `<p>Or scan it with that device:</p>${qr}` : ""}
+<p>Don't have the app on that device yet?</p>
+<a class="store-badge" href="${PLAY_URL}" target="_blank" rel="noopener noreferrer" aria-label="Get AndroMeld on Google Play">
+  <svg viewBox="12 8 33 37" aria-hidden="true">
+    <path fill="#EA4335" d="m27.622 25.899-14.194 15.066.002.009a3.84 3.84 0 0 0 5.648 2.312l.046-.026 15.978-9.22-7.48-8.141"/>
+    <path fill="#FBBC04" d="m41.983 23.334-.014-.009-6.898-3.999-7.772 6.915 7.799 7.798 6.862-3.959a3.838 3.838 0 0 0 .023-6.746"/>
+    <path fill="#4285F4" d="M13.426 12.37a3.8 3.8 0 0 0-.13.987V39.98c0 .342.044.672.13.985L28.11 26.284 13.426 12.37"/>
+    <path fill="#34A853" d="m27.727 26.668 7.347-7.345-15.96-9.254a3.84 3.84 0 0 0-5.687 2.297v.004l14.3 14.298"/>
+  </svg>
+  <span>
+    <small>Get it on</small>
+    <b>Google Play</b>
+  </span>
+</a>
 <p>This URL contains your private token. Anyone who has it can send traffic through your relay, so keep it to yourself.</p>
 <p>This page closes 30 minutes after each deployment. To open it again, redeploy the worker from <b>Workers &amp; Pages &gt; your worker &gt; Deployments</b>.</p>
 <script>

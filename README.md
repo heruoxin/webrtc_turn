@@ -53,7 +53,7 @@ Enter the **Key ID** and **API Token** from step 1 when prompted, then finish th
 
 ### 3. Get Your Relay URL
 Once deployed, open the assigned `*.workers.dev` URL:
-- The setup page displays your complete relay URL, a copy button, and a QR code for mobile scanning.
+- The setup page displays your complete relay URL and a copy button.
 - For security, this setup page is only accessible for **30 minutes** after deployment (returns 404 afterward). You can reopen it anytime by redeploying from your Cloudflare dashboard.
 - The access token in the URL is deterministically derived from your API token, so the URL remains valid across future redeployments.
 
