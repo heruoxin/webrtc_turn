@@ -33,7 +33,7 @@ from urllib.parse import parse_qs, urlparse
 
 TTL_SECONDS = 86400
 
-ACCESS_TOKEN = os.environ["ACCESS_TOKEN"]
+ACCESS_TOKEN = os.environ["ACCESS_TOKEN"].encode()
 STATIC_SECRET = os.environ["TURN_STATIC_SECRET"].encode()
 URLS = [url.strip() for url in os.environ["TURN_URLS"].split(",")]
 
@@ -60,6 +60,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(body)
 
@@ -68,7 +69,7 @@ class Handler(BaseHTTPRequestHandler):
         if request.path != "/":
             return self.reply(404, "text/plain; charset=utf-8", b"Not found")
 
-        token = parse_qs(request.query).get("token", [""])[0]
+        token = parse_qs(request.query).get("token", [""])[0].encode()
         if not hmac.compare_digest(token, ACCESS_TOKEN):
             return self.reply(
                 401,
