@@ -70,6 +70,8 @@ npx wrangler secret put ACCESS_TOKEN
 ### 1. 解析域名
 添加一条 DNS A 记录（如 `turn.example.com`）指向服务器的公网 IP。内置的 Caddy 会在首次访问时自动申请并续期 SSL 证书。
 
+> **注意**：AndroMeld 各端只支持 `https://` 协议。
+
 ### 2. 放行防火墙端口
 确保服务器防火墙及云厂商安全组放行以下端口：
 

@@ -72,6 +72,8 @@ Requires a Linux server with a public IP. (Docker Desktop on macOS/Windows is no
 ### 1. Point a Domain at Your Server
 Add an A record (e.g., `turn.example.com`) pointing to your server's public IP. The bundled Caddy instance automatically obtains and renews SSL certificates.
 
+> **Note**: AndroMeld clients support `https://` only.
+
 ### 2. Open Firewall Ports
 Ensure the following ports are open on your server firewall / cloud security group:
 
