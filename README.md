@@ -15,17 +15,11 @@ AndroMeld connects your phone, Mac, and browser directly via P2P whenever possib
 
 | | Cloudflare Workers (Recommended) | Docker (Self-Hosted) |
 |---|---|---|
-| **Best for** | Quick setup without managing a VPS | Full control on your own VPS / No credit card required |
-| **Requirements** | Cloudflare account (a credit card is most likely required, see below) | Linux VPS with public IPv4 + Domain name |
+| **Requirements** | Cloudflare account * | Linux VPS with public IPv4 + Domain name |
 | **Runs on** | Cloudflare global edge network | Your own server |
-| **Cost** | Free for first 1,000 GB/month ($0.05/GB thereafter) | Server cost only |
-| **Setup Time** | ~3–5 minutes (in browser) | ~10 minutes (CLI) |
+| **Cost** | Free for first 1,000 GB/month | Server cost only |
 
-Cloudflare's own documentation does not say whether a card is required. Several
-people have reported that the dashboard asks for one before it hands out TURN
-credentials, and a Cloudflare community moderator confirmed it in the same
-thread, so treat it as likely rather than certain. Only relayed traffic is
-billed, and the paid Workers plan is not needed.
+\* Cloudflare requires a payment method. The first 1,000 GB of traffic each month is free, $0.05/GB thereafter.
 
 ---
 
