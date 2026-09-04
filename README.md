@@ -51,12 +51,6 @@ Once deployed, open the assigned `*.workers.dev` URL:
 - For security, this setup page is only accessible for **30 minutes** after deployment (returns 404 afterward). You can reopen it anytime by redeploying from your Cloudflare dashboard.
 - The access token in the URL is deterministically derived from your API token, so the URL remains valid across future redeployments.
 
-To pick your own token instead of the derived one, set it and redeploy:
-
-```bash
-npx wrangler secret put ACCESS_TOKEN
-```
-
 ---
 
 ## Option 2: Deploy with Docker

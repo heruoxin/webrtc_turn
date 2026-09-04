@@ -51,12 +51,6 @@ AndroMeld 在设备（手机、Mac、浏览器）之间会优先建立 P2P 直�
 - 为保证安全，该网页仅在每次部署后的 **30 分钟内**可访问（超时后返回 404）。如需再次查看，在控制台中重新触发一次部署即可。
 - URL 中的访问 Token 与你的 API Token 绑定，重新部署不会改变 URL，已在 App 中配置的地址长期有效。
 
-想自己指定 token 而不用派生的那个，设好再重新部署：
-
-```bash
-npx wrangler secret put ACCESS_TOKEN
-```
-
 ---
 
 ## 方案二：使用 Docker 部署
