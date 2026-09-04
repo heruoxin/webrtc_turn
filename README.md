@@ -23,7 +23,7 @@ AndroMeld connects your phone, Mac, and browser directly via P2P whenever possib
 
 ---
 
-## Option 1: Deploy on Cloudflare
+## Option 1: Deploy on Cloudflare (Recommended)
 
 ### 1. Create a TURN Key
 1. Go to [Realtime > TURN Keys](https://dash.cloudflare.com/?to=/:account/realtime/turn) in your Cloudflare dashboard.
@@ -37,19 +37,23 @@ Click the button below to deploy to Cloudflare (this will request GitHub authori
 
 Enter the **Key ID** and **API Token** from step 1 when prompted, then finish the deployment.
 
-> **Prefer CLI?** You can also deploy directly from your terminal:
-> ```bash
-> git clone https://github.com/heruoxin/webrtc_turn
-> cd webrtc_turn/cloudflare
-> npm install
-> npm run setup
-> ```
+<details>
+<summary><b>Deploy from the command line (optional)</b></summary>
+
+If you prefer a terminal, you can also deploy locally:
+```bash
+git clone https://github.com/heruoxin/webrtc_turn
+cd webrtc_turn/cloudflare
+npm install
+npm run setup
+```
+</details>
 
 ### 3. Get Your Relay URL
-Once deployed, open the assigned `*.workers.dev` URL:
-- The setup page displays your complete relay URL and a copy button.
-- For security, this setup page is only accessible for **30 minutes** after deployment (returns 404 afterward). You can reopen it anytime by redeploying from your Cloudflare dashboard.
-- The access token in the URL is deterministically derived from your API token, so the URL remains valid across future redeployments.
+Once deployed, paste the assigned `*.workers.dev` URL into your AndroMeld Android client, under **Remote access > Relay server**.
+- For security, the setup page is only served for **30 minutes** after a deployment (returns 404 afterward). Redeploy from your Cloudflare dashboard to open it again.
+
+<img src="docs/relay-server.png" alt="Relay server field under Remote access in the Android client" width="360">
 
 ---
 
@@ -102,16 +106,10 @@ Relay traffic on port 3478 is unencrypted at the transport level and may be bloc
 4. Remember to restart coturn when certificates renew.
 </details>
 
----
+### 5. Configure in AndroMeld
+Paste your relay URL into your AndroMeld Android client, under **Remote access > Relay server**.
 
-## Configure in AndroMeld
-
-1. Open [AndroMeld](https://andromeld.catchingnow.com/) on your Android device.
-2. Go to **Remote access > Relay server**.
-3. Paste your relay URL and save. The app immediately tests the endpoint.
-4. The setting automatically syncs to your Mac and browser clients.
-
-> **Security Note**: Your relay URL contains a private token. Anyone with this URL can use your relay bandwidth, so do not share it publicly.
+<img src="docs/relay-server.png" alt="Relay server field under Remote access in the Android client" width="360">
 
 ---
 

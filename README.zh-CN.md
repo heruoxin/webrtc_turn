@@ -23,7 +23,7 @@ AndroMeld 在设备（手机、Mac、浏览器）之间会优先建立 P2P 直�
 
 ---
 
-## 方案一：部署到 Cloudflare
+## 方案一：部署到 Cloudflare（推荐）
 
 ### 1. 创建 TURN Key
 1. 打开 Cloudflare 控制台的 [Realtime > TURN Keys](https://dash.cloudflare.com/?to=/:account/realtime/turn)。
@@ -37,19 +37,24 @@ AndroMeld 在设备（手机、Mac、浏览器）之间会优先建立 P2P 直�
 
 按页面提示填入步骤 1 中保存的 **Key ID** 和 **API Token**，点击部署即可。
 
-> **命令行部署（可选）**：如果你更习惯用终端，也可以在本地直接部署：
-> ```bash
-> git clone https://github.com/heruoxin/webrtc_turn
-> cd webrtc_turn/cloudflare
-> npm install
-> npm run setup
-> ```
+<details>
+<summary><b>命令行部署（可选）</b></summary>
+
+如果你更习惯用终端，也可以在本地直接部署：
+```bash
+git clone https://github.com/heruoxin/webrtc_turn
+cd webrtc_turn/cloudflare
+npm install
+npm run setup
+```
+</details>
+
 
 ### 3. 获取中转 URL
-部署完成后，访问控制台分配的 `*.workers.dev` 域名：
-- 页面会展示生成好的中转 URL 和复制按钮。
-- 为保证安全，该网页仅在每次部署后的 **30 分钟内**可访问（超时后返回 404）。如需再次查看，在控制台中重新触发一次部署即可。
-- URL 中的访问 Token 与你的 API Token 绑定，重新部署不会改变 URL，已在 App 中配置的地址长期有效。
+部署完成后，把控制台分配的 `*.workers.dev` 域名粘贴到 AndroMeld Android 客户端 **远程访问 > 中转服务器** 中。
+- 为保证安全，该部署页仅在部署后的 **30 分钟内**可访问（超时后返回 404）。如需再次打开，在控制台中重新触发一次部署即可。 
+
+<img src="docs/relay-server.png" alt="部署到Android 客户端远程访问 > 中转服务器" width="360">
 
 ---
 
@@ -102,16 +107,10 @@ https://turn.example.com/?token=你的ACCESS_TOKEN
 4. 证书更新后记得重启 coturn。
 </details>
 
----
+### 5. 在 AndroMeld 中配置
+将你的中转 URL 粘贴到 AndroMeld Android 客户端 **远程访问 > 中转服务器** 中即可。
 
-## 在 AndroMeld 中配置
-
-1. 在 Android 设备上打开 [AndroMeld](https://andromeld.catchingnow.com/)。
-2. 进入 **远程访问 > 中转服务器**。
-3. 粘贴获取到的中转 URL 并保存。App 会立即测试连通性。
-4. 保存后，设置会自动同步到登录同一账号的 Mac 与浏览器客户端。
-
-> **安全提醒**：中转 URL 带有你的私有访问 Token，拿到该 URL 的人均可使用你的中转流量，请勿公开分享。
+<img src="docs/relay-server.png" alt="部署到Android 客户端远程访问 > 中转服务器" width="360">
 
 ---
 
